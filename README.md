@@ -21,7 +21,7 @@ Like other languages, a name (of a variable or a function) begins with letters o
 
 ### Number:
 
-Numbers can be '1', '3', '3e4', '3.3', '.3e5', but not '.e4', '1.'(in other words, there must be sometihing after '.', or between '.' and 'e').
+Numbers can be '1', '3', '3e4', '3.3', '.3e5', but not '.e4', '1.'(in other words, there must be something after '.', or between '.' and 'e').
 
 ### Expression:
 
