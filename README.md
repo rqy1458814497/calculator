@@ -16,12 +16,15 @@ Using a unnaming language(maybe I will name it 'RQY-language', after I finish it
 ##Support syntax:##
 
 ###Name:###
+
 Like other languages, a name (of a variable or a function) begins with letters or '\_', and only includes letters, '\_' and digits.
 
 ###Number:###
+
 Numbers can be '1', '3', '3e4', '3.3', '.3e5', but not '.e4', '1.'(in other words, there must be sometihing after '.', or between '.' and 'e').
 
 ###Expression:###
+
 Some number, variable or function call with unary operators('+' or '-') connected with binary operators('+', '-', '\*', '/', '^'(pow), '==', '!=', '>', '<', '>=', '<=', '=') and parentheses, for example,
 
     1+3
@@ -44,7 +47,9 @@ Priority levels of binary operators(from lowest to highest):
 * \+ \-
 * \* /
 * ^
+
 ###Statement:###
+
 Pay attention: No ';' after any statement(at least in v2.0).
 
 1. **expression**: It won't do anything without assign. Pay attention: function call also belong to it.
@@ -60,6 +65,7 @@ Pay attention: No ';' after any statement(at least in v2.0).
 6. **'if' '('condition')' stat [else stat]**: If statement or if-else statement.
 
 ###Function:###
+
 Function definitions are begin with reserved word 'func', such as:
 
     func fac(n) {
