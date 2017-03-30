@@ -11,10 +11,13 @@ Using a unnaming language(maybe I will name it 'RQY-language', after I finish it
 * spi.py Five files in one. Including all content of files above.
 
 ##Support syntax:
+
 ###Name:
 Like other languages, a name (of a variable or a function) begins with letters or '\_', and only includes letters, '\_' and digits.
+
 ###Number:
 Numbers can be '1', '3', '3e4', '3.3', '.3e5', but not '.e4', '1.'(in other words, there must be sometihing after '.', or between '.' and 'e').
+
 ###Expression:
 Some number, variable or function call with unary operators('+' or '-') connected with binary operators('+', '-', '\*', '/', '^'(pow), '==', '!=', '>', '<', '>=', '<=', '=') and parentheses, for example,
     1+3
@@ -38,6 +41,7 @@ Pay attention: No ';' after any statement(at least in v2.0).
 4. **'{'stat stat stat ...'}'** A statement bolck.
 5. **'while' '('condition')' stat**  While loop.
 6. **'if' '('condition')' stat [else stat]** If statement or if-else statement.
+
 ###Function:
 Function definitions are begin with reserved word 'func', such as:
     func fac(n) {
