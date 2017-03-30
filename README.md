@@ -1,10 +1,10 @@
-#A Small Interperter#
+# A Small Interperter
 
-##Version 2.0##
+## Version 2.0
 
 Using a unnaming language(maybe I will name it 'RQY-language', after I finish it).
 
-##Files:##
+## Files:
 
 * Constants.py Defines some constants.
 * Lexer.py Includes class *Token* and *Lexer*.
@@ -13,17 +13,17 @@ Using a unnaming language(maybe I will name it 'RQY-language', after I finish it
 * main.py The entry point to the program. Includes **main()**, **runcmd()**
 * spi.py Five files in one. Including all content of files above.
 
-##Support syntax:##
+## Support syntax:
 
-###Name:###
+### Name:
 
 Like other languages, a name (of a variable or a function) begins with letters or '\_', and only includes letters, '\_' and digits.
 
-###Number:###
+### Number:
 
 Numbers can be '1', '3', '3e4', '3.3', '.3e5', but not '.e4', '1.'(in other words, there must be sometihing after '.', or between '.' and 'e').
 
-###Expression:###
+### Expression:
 
 Some number, variable or function call with unary operators('+' or '-') connected with binary operators('+', '-', '\*', '/', '^'(pow), '==', '!=', '>', '<', '>=', '<=', '=') and parentheses, for example,
 
@@ -48,7 +48,7 @@ Priority levels of binary operators(from lowest to highest):
 * \* /
 * ^
 
-###Statement:###
+### Statement:
 
 Pay attention: No ';' after any statement(at least in v2.0).
 
@@ -64,7 +64,7 @@ Pay attention: No ';' after any statement(at least in v2.0).
 
 6. **'if' '('condition')' stat [else stat]**: If statement or if-else statement.
 
-###Function:###
+### Function:
 
 Function definitions are begin with reserved word 'func', such as:
 
