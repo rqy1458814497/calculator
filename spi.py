@@ -6,6 +6,7 @@
 ADD, SUB, MUL, DIV, MOD, POW = 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'POW'
 LT, GT, LE, GE, EQ, NE = 'LT', 'GT', 'LE', 'GE', 'EQ', 'NE'
 LPAREN, RPAREN, ASSIGN, COMMA, SEMI = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA', 'SEMI'
+LBRACK, RBRACK, INDEX = 'LBRACK', 'RBRACK', 'INDEX'
 LBRACE, RBRACE, NUM, NAME, EOF = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'EOF'
 PRINT, FUNC, IF, ELSE, RETURN = 'PRINT', 'FUNC', 'IF', 'ELSE', 'RETURN'
 WHILE, FOR = 'WHILE', 'FOR'
@@ -28,7 +29,8 @@ OneCharSymbols = {
     '+': ADD, '-': SUB, '*': MUL, '/': DIV, '%': MOD, '^': POW,
     '>': GT, '<': LT,
     '(': LPAREN, ')': RPAREN, '=': ASSIGN, ',': COMMA,
-    ';': SEMI, '{': LBRACE, '}': RBRACE
+    ';': SEMI, '{': LBRACE, '}': RBRACE,
+    '[': LBRACK, ']': RBRACK
 }
 # Binary Operators to Functions.
 BinOp = {
@@ -37,7 +39,8 @@ BinOp = {
     MOD: lambda a, b: a % b, POW: lambda a, b: a ** b,
     GT: lambda a, b: a > b, LT: lambda a, b: a < b,
     GE: lambda a, b: a >= b, LE: lambda a, b: a <= b,
-    EQ: lambda a, b: a == b, NE: lambda a, b: a != b
+    EQ: lambda a, b: a == b, NE: lambda a, b: a != b,
+    INDEX: lambda a, b: a[int(b)]
 }
 # Unit Operators to Functions.
 UnaryOp = {
@@ -231,6 +234,18 @@ class AST_Num(AST):
     __repr__ = __str__
 
 
+class AST_Array(AST):
+    """AST: array"""
+
+    def __init__(self, lst):
+        self.lst = lst
+
+    def __str__(self):
+        return "AST_Num(%r)" % (self.lst)
+
+    __repr__ = __str__
+
+
 class AST_ID(AST):
     def __init__(self, name):
         self.name = name
@@ -403,9 +418,24 @@ class Parser(object):
                     ans = AST_FuncCall(name, arglist)
                 else:
                     ans = AST_ID(name)
+            elif self.current_token.type == LBRACK:
+                self.eat(LBRACK)
+                lst = []
+                if self.current_token.type != RBRACK:
+                    lst.append(self.Unit(Max_Priority))
+                    while self.current_token.type == COMMA:
+                        self.eat(COMMA)
+                        lst.append(self.Unit(Max_Priority))
+                self.eat(RBRACK)
+                ans = AST_Array(lst)
             else:
                 self.Error('invalid syntax at "%r" at pos %d' %
                            (self.lexer.get_local_text(), self.lexer.pos - 1l))
+            while self.current_token.type == LBRACK:
+                self.eat(LBRACK)
+                ind = self.Unit(Max_Priority)
+                self.eat(RBRACK)
+                ans = AST_BinOp(Token(INDEX, '[]'), ans, ind)
         elif Associativity[priority] == LeftAssoc:
             ans = self.Unit(priority - 1)
             while self.current_token.type in Prio and Prio[self.current_token.type] == priority:
@@ -555,13 +585,23 @@ class Interpreter(NodeVisitor):
             return self.local_var[-1][name]
 
     def visit_Print(self, node):
-        print ('%g' % self.visit(node.expr))
+        ans = self.visit(node.expr)
+        if isinstance(ans, float):
+            print('%g' % ans)
+        else:
+            print(ans)
 
     def visit_UnaryOp(self, node):
         return UnaryOp[node.token.type](self.visit(node.son))
 
     def visit_Num(self, node):
         return node.value
+
+    def visit_Array(self, node):
+        ans = []
+        for subnode in node.lst:
+            ans.append(self.visit(subnode))
+        return ans
 
     def visit_ID(self, node):
         for vars in list(reversed(self.local_var)):

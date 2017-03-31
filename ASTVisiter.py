@@ -42,13 +42,23 @@ class Interpreter(NodeVisitor):
             return self.local_var[-1][name]
 
     def visit_Print(self, node):
-        print ('%g' % self.visit(node.expr))
+        ans = self.visit(node.expr)
+        if isinstance(ans, float):
+            print('%g' % ans)
+        else:
+            print(ans)
 
     def visit_UnaryOp(self, node):
         return UnaryOp[node.token.type](self.visit(node.son))
 
     def visit_Num(self, node):
         return node.value
+
+    def visit_Array(self, node):
+        ans = []
+        for subnode in node.lst:
+            ans.append(self.visit(subnode))
+        return ans
 
     def visit_ID(self, node):
         for vars in list(reversed(self.local_var)):

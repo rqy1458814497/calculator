@@ -2,7 +2,7 @@
 ADD, SUB, MUL, DIV, MOD, POW = 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'POW'
 LT, GT, LE, GE, EQ, NE = 'LT', 'GT', 'LE', 'GE', 'EQ', 'NE'
 LPAREN, RPAREN, ASSIGN, COMMA, SEMI = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA', 'SEMI'
-LBRACK, RBRACK = 'LBRACK', 'RBRACK'
+LBRACK, RBRACK, INDEX = 'LBRACK', 'RBRACK', 'INDEX'
 LBRACE, RBRACE, NUM, NAME, EOF = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'EOF'
 PRINT, FUNC, IF, ELSE, RETURN = 'PRINT', 'FUNC', 'IF', 'ELSE', 'RETURN'
 WHILE, FOR = 'WHILE', 'FOR'
@@ -26,6 +26,7 @@ OneCharSymbols = {
     '>': GT, '<': LT,
     '(': LPAREN, ')': RPAREN, '=': ASSIGN, ',': COMMA,
     ';': SEMI, '{': LBRACE, '}': RBRACE,
+    '[': LBRACK, ']': RBRACK
 }
 # Binary Operators to Functions.
 BinOp = {
@@ -34,7 +35,8 @@ BinOp = {
     MOD: lambda a, b: a % b, POW: lambda a, b: a ** b,
     GT: lambda a, b: a > b, LT: lambda a, b: a < b,
     GE: lambda a, b: a >= b, LE: lambda a, b: a <= b,
-    EQ: lambda a, b: a == b, NE: lambda a, b: a != b
+    EQ: lambda a, b: a == b, NE: lambda a, b: a != b,
+    INDEX: lambda a, b: a[int(b)]
 }
 # Unit Operators to Functions.
 UnaryOp = {

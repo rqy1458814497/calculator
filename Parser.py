@@ -41,7 +41,19 @@ class AST_Num(AST):
         self.value = value
 
     def __str__(self):
-        return "AST_Num(%r)" % (self.value)
+        return "AST_Num(%g)" % (self.value)
+
+    __repr__ = __str__
+
+
+class AST_Array(AST):
+    """AST: array"""
+
+    def __init__(self, lst):
+        self.lst = lst
+
+    def __str__(self):
+        return "AST_Num(%r)" % (self.lst)
 
     __repr__ = __str__
 
@@ -232,9 +244,24 @@ class Parser(object):
                     ans = AST_FuncCall(name, arglist)
                 else:
                     ans = AST_ID(name)
+            elif self.current_token.type == LBRACK:
+                self.eat(LBRACK)
+                lst = []
+                if self.current_token.type != RBRACK:
+                    lst.append(self.Unit(Max_Priority))
+                    while self.current_token.type == COMMA:
+                        self.eat(COMMA)
+                        lst.append(self.Unit(Max_Priority))
+                self.eat(RBRACK)
+                ans = AST_Array(lst)
             else:
                 self.Error('invalid syntax at "%r" at pos %d' %
                            (self.lexer.get_local_text(), self.lexer.pos - 1l))
+            while self.current_token.type == LBRACK:
+                self.eat(LBRACK)
+                ind = self.Unit(Max_Priority)
+                self.eat(RBRACK)
+                ans = AST_BinOp(Lexer.Token(INDEX, '[]'), ans, ind)
         elif Associativity[priority] == LeftAssoc:
             ans = self.Unit(priority - 1)
             while self.current_token.type in Prio and Prio[self.current_token.type] == priority:
