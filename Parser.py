@@ -330,7 +330,10 @@ class Parser(object):
             ans = AST_For(name, begin, end, step, stat)
         elif self.current_token.type == RETURN:
             self.eat(RETURN)
-            ans = AST_Return(self.Unit(Max_Priority))
+            if self.current_token.type != SEMI:
+                ans = AST_Return(self.Unit(Max_Priority))
+            else:
+                ans = AST_Return(None)
             self.eat(SEMI)
         else:
             ans = self.Unit(Max_Priority)

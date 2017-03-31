@@ -87,7 +87,7 @@ def runcmd(text):
 
 
 def main():
-    print('A calculator written by RQY at Mar 30, 2017.')
+    print('A calculator written by RQY at Mar 31, 2017.')
     print('version ' + VERSION)
     try:
         while True:

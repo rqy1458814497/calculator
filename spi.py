@@ -22,7 +22,7 @@ RESERVED = {
 }
 # Symbols that has two characters.
 TwoCharSymbols = {
-    '>=': GE, '<=': LE, '==': EQ
+    '>=': GE, '<=': LE, '==': EQ, '!=': NE, '&&': AND, '||': OR
 }
 # Symbols that has only one character.
 OneCharSymbols = {
@@ -30,7 +30,8 @@ OneCharSymbols = {
     '>': GT, '<': LT,
     '(': LPAREN, ')': RPAREN, '=': ASSIGN, ',': COMMA,
     ';': SEMI, '{': LBRACE, '}': RBRACE,
-    '[': LBRACK, ']': RBRACK
+    '[': LBRACK, ']': RBRACK,
+    '!': NOT
 }
 # Binary Operators to Functions.
 BinOp = {
@@ -40,23 +41,27 @@ BinOp = {
     GT: lambda a, b: a > b, LT: lambda a, b: a < b,
     GE: lambda a, b: a >= b, LE: lambda a, b: a <= b,
     EQ: lambda a, b: a == b, NE: lambda a, b: a != b,
+    AND: lambda a, b: a and b, OR: lambda a, b: a or b,
     INDEX: lambda a, b: a[int(b)]
 }
 # Unit Operators to Functions.
 UnaryOp = {
     ADD: lambda a: +a,
     SUB: lambda a: -a,
+    NOT: lambda a: not a
 }
 # Priorities of operators.
 Prio = {
-    ASSIGN: 6,
+    ASSIGN: 8,
+    OR: 7,
+    AND: 6,
     EQ: 5, NE: 5,
     LT: 4, GT: 4, LE: 4, GE: 4,
     ADD: 3, SUB: 3,
     MUL: 2, DIV: 2, MOD: 2,
     POW: 1
 }
-Max_Priority = 6
+Max_Priority = 8
 RightAssoc = 'RightAssoc'
 LeftAssoc = 'LeftAssoc'
 Associativity = [
@@ -66,11 +71,13 @@ Associativity = [
     LeftAssoc,   # '+' '-'
     LeftAssoc,   # '>' '<' '>=' '<='
     LeftAssoc,   # '==' '!='
+    LeftAssoc,   # '&&'
+    LeftAssoc,   # '||'
     RightAssoc   # '='
 ]
 BeginBlockSymbols = [LBRACE, LPAREN, LBRACK]
 EndBlockSymbols = [RBRACE, RPAREN, RBRACK]
-VERSION = '3.0'
+VERSION = '3.1'
 
 
 ##############################################################
@@ -116,7 +123,7 @@ class Lexer(object):
         if self.pos >= len(self.text) - 1:
             return None
         else:
-            return self.text[self.pos + 1]
+            return self.text[self.pos]
 
     def get_local_text(self, length=5):
         ans = ''
@@ -504,7 +511,10 @@ class Parser(object):
             ans = AST_For(name, begin, end, step, stat)
         elif self.current_token.type == RETURN:
             self.eat(RETURN)
-            ans = AST_Return(self.Unit(Max_Priority))
+            if self.current_token.type != SEMI:
+                ans = AST_Return(self.Unit(Max_Priority))
+            else:
+                ans = AST_Return(None)
             self.eat(SEMI)
         else:
             ans = self.Unit(Max_Priority)
@@ -571,10 +581,15 @@ class Interpreter(NodeVisitor):
     def visit_BinOp(self, node):
         tp = node.token.type
         if tp != ASSIGN:
-            return BinOp[tp](self.visit(node.lson),
-                             self.visit(node.rson))
+            lans = self.visit(node.lson)
+            if (tp == AND and not lans) or (tp == OR and lans):
+                return lans
+            return BinOp[tp](lans, self.visit(node.rson))
         elif not isinstance(node.lson, AST_ID):
-            self.Error("Can't assign to a non-variable")
+            if isinstance(node.lson, AST_BinOp) and node.lson.token.type == INDEX:
+                self.visit(node.lson.lson)[int(self.visit(node.lson.rson))] = self.visit(node.rson)
+            else:
+                self.Error("Can't assign to a non-variable")
         else:
             name = node.lson.name
             for vars in list(reversed(self.local_var)):
@@ -621,7 +636,7 @@ class Interpreter(NodeVisitor):
         func = self.functions[node.funcname]
         length = len(func.arglist)
         if length != len(node.arglist):
-            self.Error('%s takes %d paralist(s) (%d given)' %
+            self.Error('%s takes %d argument(s) (%d given)' %
                        (node.name, length, len(node.arglist)))
         newlocal = {}
         for i in range(length):
@@ -673,7 +688,10 @@ class Interpreter(NodeVisitor):
         self.local_var.pop()
 
     def visit_Return(self, node):
-        self.return_value = self.visit(node.expr)
+        if node.expr == None:
+            self.return_value = None
+        else:
+            self.return_value = self.visit(node.expr)
         self.returned = True
 
     def interpret(self):
@@ -788,7 +806,7 @@ def runcmd(text):
 
 
 def main():
-    print('A calculator written by RQY at Mar 30, 2017.')
+    print('A calculator written by RQY at Mar 31, 2017.')
     print('version ' + VERSION)
     try:
         while True:

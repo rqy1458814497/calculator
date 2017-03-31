@@ -40,7 +40,7 @@ class Lexer(object):
         if self.pos >= len(self.text) - 1:
             return None
         else:
-            return self.text[self.pos + 1]
+            return self.text[self.pos]
 
     def get_local_text(self, length=5):
         ans = ''

@@ -28,10 +28,15 @@ class Interpreter(NodeVisitor):
     def visit_BinOp(self, node):
         tp = node.token.type
         if tp != ASSIGN:
-            return BinOp[tp](self.visit(node.lson),
-                             self.visit(node.rson))
+            lans = self.visit(node.lson)
+            if (tp == AND and not lans) or (tp == OR and lans):
+                return lans
+            return BinOp[tp](lans, self.visit(node.rson))
         elif not isinstance(node.lson, Parser.AST_ID):
-            self.Error("Can't assign to a non-variable")
+            if isinstance(node.lson, Parser.AST_BinOp) and node.lson.token.type == INDEX:
+                self.visit(node.lson.lson)[int(self.visit(node.lson.rson))] = self.visit(node.rson)
+            else:
+                self.Error("Can't assign to a non-variable")
         else:
             name = node.lson.name
             for vars in list(reversed(self.local_var)):
@@ -78,8 +83,8 @@ class Interpreter(NodeVisitor):
         func = self.functions[node.funcname]
         length = len(func.arglist)
         if length != len(node.arglist):
-            self.Error('%s takes %d paralist(s) (%d given)' %
-                       (node.name, length, len(node.arglist)))
+            self.Error('%s takes %d argument(s) (%d given)' %
+                       (node.funcname, length, len(node.arglist)))
         newlocal = {}
         for i in range(length):
             newlocal[func.arglist[i]] = self.visit(node.arglist[i])
@@ -130,7 +135,10 @@ class Interpreter(NodeVisitor):
         self.local_var.pop()
 
     def visit_Return(self, node):
-        self.return_value = self.visit(node.expr)
+        if node.expr == None:
+            self.return_value = None
+        else:
+            self.return_value = self.visit(node.expr)
         self.returned = True
 
     def interpret(self):
