@@ -26,7 +26,7 @@ def CMD_showall(args):
         for k in variable_table:
             length = max(length, len(k))
         for (k, v) in variable_table.items():
-            print('%s : %g' % ((length - len(k) + 1) * ' ' + k, v))
+            print('%s : %s' % ((length - len(k) + 1) * ' ' + k, v))
     else:
         print('No variables.')
 
