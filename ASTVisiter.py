@@ -42,7 +42,7 @@ class Interpreter(NodeVisitor):
             return self.local_var[-1][name]
 
     def visit_Print(self, node):
-        print (self.visit(node.expr))
+        print ('%g' % self.visit(node.expr))
 
     def visit_UnaryOp(self, node):
         return UnaryOp[node.token.type](self.visit(node.son))
@@ -103,6 +103,21 @@ class Interpreter(NodeVisitor):
     def visit_While(self, node):
         while self.visit(node.condition):
             self.visit(node.stat)
+
+    def visit_For(self, node):
+        begin = self.visit(node.begin)
+        self.local_var.append({node.name: begin})
+        end = self.visit(node.end)
+        if node.step is not None:
+            step = self.visit(node.step)
+        elif begin <= end:
+            step = 1
+        else:
+            step = -1
+        while (end - self.local_var[-1][node.name]) * step >= 0:
+            self.visit(node.stat)
+            self.local_var[-1][node.name] += step
+        self.local_var.pop()
 
     def visit_Return(self, node):
         self.return_value = self.visit(node.expr)

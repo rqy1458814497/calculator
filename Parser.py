@@ -8,6 +8,8 @@ class AST(object):
 
 
 class AST_BinOp(AST):
+    """AST: binary operator"""
+
     def __init__(self, token, lson, rson):
         self.token = token
         self.lson = lson
@@ -20,6 +22,8 @@ class AST_BinOp(AST):
 
 
 class AST_UnaryOp(AST):
+    """AST: unary operator"""
+
     def __init__(self, token, son):
         self.token = token
         self.son = son
@@ -31,6 +35,8 @@ class AST_UnaryOp(AST):
 
 
 class AST_Num(AST):
+    """AST: number"""
+
     def __init__(self, value):
         self.value = value
 
@@ -41,6 +47,8 @@ class AST_Num(AST):
 
 
 class AST_ID(AST):
+    """AST: name (for variable)"""
+
     def __init__(self, name):
         self.name = name
 
@@ -51,6 +59,8 @@ class AST_ID(AST):
 
 
 class AST_Print(AST):
+    """AST: print statement"""
+
     def __init__(self, expr):
         self.expr = expr
 
@@ -61,6 +71,8 @@ class AST_Print(AST):
 
 
 class AST_EmptyStat(AST):
+    """AST: empty statement"""
+
     def __str__(self):
         return "AST_EmptyStat()"
 
@@ -68,6 +80,8 @@ class AST_EmptyStat(AST):
 
 
 class AST_Block(AST):
+    """AST: code block"""
+
     def __init__(self, statements):
         self.statements = statements
 
@@ -78,6 +92,8 @@ class AST_Block(AST):
 
 
 class AST_FuncDef(AST):
+    """AST: function definition"""
+
     def __init__(self, name, arglist, block):
         self.name = name
         self.arglist = arglist
@@ -90,6 +106,8 @@ class AST_FuncDef(AST):
 
 
 class AST_FuncCall(AST):
+    """AST: function call"""
+
     def __init__(self, funcname, arglist):
         self.arglist = arglist
         self.funcname = funcname
@@ -101,6 +119,8 @@ class AST_FuncCall(AST):
 
 
 class AST_If(AST):
+    """AST: if-else statement"""
+
     def __init__(self, condition, ifstat, elsestat):
         self.condition = condition
         self.ifstat = ifstat
@@ -112,23 +132,44 @@ class AST_If(AST):
     __repr__ = __str__
 
 
-class AST_While(AST):
-    def __init__(self, condition, stat):
-        self.condition = condition
-        self.stat = stat
-
-    def __str__(self):
-        return "AST_If(%r, %r)" % (self.condition, self.stat)
-
-    __repr__ = __str__
-
-
 class AST_Return(AST):
+    """AST: return statement"""
+
     def __init__(self, expr):
         self.expr = expr
 
     def __str__(self):
         return "AST_Return(%r)" % (self.expr)
+
+    __repr__ = __str__
+
+
+class AST_While(AST):
+    """AST: while-loop statement"""
+
+    def __init__(self, condition, stat):
+        self.condition = condition
+        self.stat = stat
+
+    def __str__(self):
+        return "AST_While(%r, %r)" % (self.condition, self.stat)
+
+    __repr__ = __str__
+
+
+class AST_For(AST):
+    """AST: for-loop statement"""
+
+    def __init__(self, name, begin, end, step, stat):
+        self.name = name
+        self.begin = begin
+        self.end = end
+        self.step = step
+        self.stat = stat
+
+    def __str__(self):
+        return "AST_For(%r, %s, %s, %s, %s)" % (
+            self.name, self.begin, self.end, self.step, self.stat)
 
     __repr__ = __str__
 
@@ -223,6 +264,7 @@ class Parser(object):
         elif self.current_token.type == PRINT:
             self.eat(PRINT)
             ans = AST_Print(self.Unit(Max_Priority))
+            self.eat(SEMI)
         elif self.current_token.type == IF:
             self.eat(IF)
             self.eat(LPAREN)
@@ -241,12 +283,31 @@ class Parser(object):
             condition = self.Unit(Max_Priority)
             self.eat(RPAREN)
             stat = self.stat()
-            return AST_While(condition, stat)
+            ans = AST_While(condition, stat)
+        elif self.current_token.type == FOR:
+            self.eat(FOR)
+            self.eat(LPAREN)
+            name = self.current_token.value
+            self.eat(NAME)
+            self.eat(ASSIGN)
+            begin = self.Unit(Max_Priority)
+            self.eat(COMMA)
+            end = self.Unit(Max_Priority)
+            if self.current_token.type == COMMA:
+                self.eat(COMMA)
+                step = self.Unit(Max_Priority)
+            else:
+                step = None
+            self.eat(RPAREN)
+            stat = self.stat()
+            ans = AST_For(name, begin, end, step, stat)
         elif self.current_token.type == RETURN:
             self.eat(RETURN)
             ans = AST_Return(self.Unit(Max_Priority))
+            self.eat(SEMI)
         else:
             ans = self.Unit(Max_Priority)
+            self.eat(SEMI)
         return ans
 
     def block(self):

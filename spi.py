@@ -5,10 +5,10 @@
 # Probobly Token.type.
 ADD, SUB, MUL, DIV, MOD, POW = 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'POW'
 LT, GT, LE, GE, EQ, NE = 'LT', 'GT', 'LE', 'GE', 'EQ', 'NE'
-LPAREN, RPAREN, ASSIGN, COMMA = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA'
+LPAREN, RPAREN, ASSIGN, COMMA, SEMI = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA', 'SEMI'
 LBRACE, RBRACE, NUM, NAME, EOF = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'EOF'
 PRINT, FUNC, IF, ELSE, RETURN = 'PRINT', 'FUNC', 'IF', 'ELSE', 'RETURN'
-WHILE = 'WHILE'
+WHILE, FOR = 'WHILE', 'FOR'
 # Reseverd words.
 RESERVED = {
     'print': PRINT,
@@ -16,7 +16,8 @@ RESERVED = {
     'if': IF,
     'else': ELSE,
     'return': RETURN,
-    'while': WHILE
+    'while': WHILE,
+    'for': FOR
 }
 # Symbols that has two characters.
 TwoCharSymbols = {
@@ -27,7 +28,7 @@ OneCharSymbols = {
     '+': ADD, '-': SUB, '*': MUL, '/': DIV, '%': MOD, '^': POW,
     '>': GT, '<': LT,
     '(': LPAREN, ')': RPAREN, '=': ASSIGN, ',': COMMA,
-    '{': LBRACE, '}': RBRACE
+    ';': SEMI, '{': LBRACE, '}': RBRACE
 }
 # Binary Operators to Functions.
 BinOp = {
@@ -313,6 +314,23 @@ class AST_While(AST):
     __repr__ = __str__
 
 
+class AST_For(AST):
+    """AST: for-loop statement"""
+
+    def __init__(self, name, begin, end, step, stat):
+        self.name = name
+        self.begin = begin
+        self.end = end
+        self.step = step
+        self.stat = stat
+
+    def __str__(self):
+        return "AST_For(%r, %s, %s, %s, %s)" % (
+            self.name, self.begin, self.end, self.step, self.stat)
+
+    __repr__ = __str__
+
+
 class AST_Return(AST):
     def __init__(self, expr):
         self.expr = expr
@@ -417,6 +435,7 @@ class Parser(object):
         elif self.current_token.type == PRINT:
             self.eat(PRINT)
             ans = AST_Print(self.Unit(Max_Priority))
+            self.eat(SEMI)
         elif self.current_token.type == IF:
             self.eat(IF)
             self.eat(LPAREN)
@@ -435,12 +454,31 @@ class Parser(object):
             condition = self.Unit(Max_Priority)
             self.eat(RPAREN)
             stat = self.stat()
-            return AST_While(condition, stat)
+            ans = AST_While(condition, stat)
+        elif self.current_token.type == FOR:
+            self.eat(FOR)
+            self.eat(LPAREN)
+            name = self.current_token.value
+            self.eat(NAME)
+            self.eat(ASSIGN)
+            begin = self.Unit(Max_Priority)
+            self.eat(COMMA)
+            end = self.Unit(Max_Priority)
+            if self.current_token.type == COMMA:
+                self.eat(COMMA)
+                step = self.Unit(Max_Priority)
+            else:
+                step = None
+            self.eat(RPAREN)
+            stat = self.stat()
+            ans = AST_For(name, begin, end, step, stat)
         elif self.current_token.type == RETURN:
             self.eat(RETURN)
             ans = AST_Return(self.Unit(Max_Priority))
+            self.eat(SEMI)
         else:
             ans = self.Unit(Max_Priority)
+            self.eat(SEMI)
         return ans
 
     def block(self):
@@ -517,7 +555,7 @@ class Interpreter(NodeVisitor):
             return self.local_var[-1][name]
 
     def visit_Print(self, node):
-        print (self.visit(node.expr))
+        print ('%g' % self.visit(node.expr))
 
     def visit_UnaryOp(self, node):
         return UnaryOp[node.token.type](self.visit(node.son))
@@ -578,6 +616,21 @@ class Interpreter(NodeVisitor):
     def visit_While(self, node):
         while self.visit(node.condition):
             self.visit(node.stat)
+
+    def visit_For(self, node):
+        begin = self.visit(node.begin)
+        self.local_var.append({node.name: begin})
+        end = self.visit(node.end)
+        if node.step is not None:
+            step = self.visit(node.step)
+        elif begin <= end:
+            step = 1
+        else:
+            step = -1
+        while (end - self.local_var[-1][node.name]) * step >= 0:
+            self.visit(node.stat)
+            self.local_var[-1][node.name] += step
+        self.local_var.pop()
 
     def visit_Return(self, node):
         self.return_value = self.visit(node.expr)

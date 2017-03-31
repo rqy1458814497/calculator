@@ -1,10 +1,11 @@
 # Probobly Token.type.
 ADD, SUB, MUL, DIV, MOD, POW = 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'POW'
 LT, GT, LE, GE, EQ, NE = 'LT', 'GT', 'LE', 'GE', 'EQ', 'NE'
-LPAREN, RPAREN, ASSIGN, COMMA = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA'
+LPAREN, RPAREN, ASSIGN, COMMA, SEMI = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA', 'SEMI'
+LBRACK, RBRACK = 'LBRACK', 'RBRACK'
 LBRACE, RBRACE, NUM, NAME, EOF = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'EOF'
 PRINT, FUNC, IF, ELSE, RETURN = 'PRINT', 'FUNC', 'IF', 'ELSE', 'RETURN'
-WHILE = 'WHILE'
+WHILE, FOR = 'WHILE', 'FOR'
 # Reseverd words.
 RESERVED = {
     'print': PRINT,
@@ -12,7 +13,8 @@ RESERVED = {
     'if': IF,
     'else': ELSE,
     'return': RETURN,
-    'while': WHILE
+    'while': WHILE,
+    'for': FOR
 }
 # Symbols that has two characters.
 TwoCharSymbols = {
@@ -23,7 +25,7 @@ OneCharSymbols = {
     '+': ADD, '-': SUB, '*': MUL, '/': DIV, '%': MOD, '^': POW,
     '>': GT, '<': LT,
     '(': LPAREN, ')': RPAREN, '=': ASSIGN, ',': COMMA,
-    '{': LBRACE, '}': RBRACE
+    ';': SEMI, '{': LBRACE, '}': RBRACE,
 }
 # Binary Operators to Functions.
 BinOp = {
