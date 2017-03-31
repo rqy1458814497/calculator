@@ -1,8 +1,8 @@
 # A Small Interperter
 
-## Version 2.0
+## Version 3.0
 
-Using a unnaming language(maybe I will name it 'RQY-language', after I finish it).
+Interpret a unnaming language(maybe I will name it 'RQY-language', after I finish it).
 
 ## Files:
 
@@ -50,19 +50,21 @@ Priority levels of binary operators(from lowest to highest):
 
 ### Statement:
 
-Pay attention: No ';' after any statement(at least in v2.0).
+Pay attention: Unlike version2.0, you must add ';' after some statement. It is to avoid ambiguity(such as 'print 1   + 2' and 'print 1+2')
 
-1. **expression**: It won't do anything without assign. Pay attention: function call also belong to it.
+1. **expression;**: It won't do anything without assign. Pay attention: function call also belong to it.
 
-2. **print expression**: Output the value of expression.
+2. **print expression;**: Output the value of expression.
 
-3. **return expression**: Return from a function(so you can't write it ouside any function).
+3. **return expression;**: Return from a function(so you can't write it ouside any function).
 
 4. **'{'stat stat stat ...'}'**: A statement bolck.
 
 5. **'while' '('condition')' stat**:  While loop.
 
 6. **'if' '('condition')' stat [else stat]**: If statement or if-else statement.
+
+6. **'for' '('name '=' begin_value',' end_value [',' step]')' stat**: For statement. If you give 'step', it will work like 'for (name = begin_value; name <= end_value; name += step)' (or if step < 0, it will be 'name >= end_value'). Otherwise, 'step' will be 1 (or -1, if begin_value > end_value). **Pay attention:** You can modify the variable 'step' in the loop body, so be careful to avoid endless loop. For example, *for(i = 0,5) i = 0;* is a endless loop.
 
 ### Function:
 

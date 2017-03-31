@@ -68,9 +68,9 @@ Associativity = [
     LeftAssoc,   # '==' '!='
     RightAssoc   # '='
 ]
-BeginBlockSymbols = [LBRACE, LPAREN]
-EndBlockSymbols = [RBRACE, RPAREN]
-VERSION = '2.0'
+BeginBlockSymbols = [LBRACE, LPAREN, LBRACK]
+EndBlockSymbols = [RBRACE, RPAREN, RBRACK]
+VERSION = '3.0'
 
 
 ##############################################################
