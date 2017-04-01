@@ -5,11 +5,12 @@
 # Probobly Token.type.
 ADD, SUB, MUL, DIV, MOD, POW = 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'POW'
 LT, GT, LE, GE, EQ, NE = 'LT', 'GT', 'LE', 'GE', 'EQ', 'NE'
+AND, OR, NOT = 'AND', 'OR', 'NOT'
 LPAREN, RPAREN, ASSIGN, COMMA, SEMI = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA', 'SEMI'
 LBRACK, RBRACK, INDEX = 'LBRACK', 'RBRACK', 'INDEX'
 LBRACE, RBRACE, NUM, NAME, EOF = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'EOF'
 PRINT, FUNC, IF, ELSE, RETURN = 'PRINT', 'FUNC', 'IF', 'ELSE', 'RETURN'
-WHILE, FOR = 'WHILE', 'FOR'
+WHILE, FOR, INPUT = 'WHILE', 'FOR', 'INPUT'
 # Reseverd words.
 RESERVED = {
     'print': PRINT,
@@ -18,7 +19,8 @@ RESERVED = {
     'else': ELSE,
     'return': RETURN,
     'while': WHILE,
-    'for': FOR
+    'for': FOR,
+    'input': INPUT
 }
 # Symbols that has two characters.
 TwoCharSymbols = {
@@ -77,7 +79,7 @@ Associativity = [
 ]
 BeginBlockSymbols = [LBRACE, LPAREN, LBRACK]
 EndBlockSymbols = [RBRACE, RPAREN, RBRACK]
-VERSION = '3.1'
+VERSION = '3.2'
 
 
 ##############################################################
@@ -269,6 +271,18 @@ class AST_Print(AST):
 
     def __str__(self):
         return "AST_Print(%r)" % (self.expr)
+
+    __repr__ = __str__
+
+
+class AST_Input(AST):
+    """AST: input statement"""
+
+    def __init__(self, var):
+        self.var = var
+
+    def __str__(self):
+        return "AST_Input(%r)" % (self.var)
 
     __repr__ = __str__
 
@@ -466,6 +480,45 @@ class Parser(object):
                     rightest_node = rightest_node.rson
         return ans
 
+    def ifstat(self):
+        self.eat(IF)
+        self.eat(LPAREN)
+        condition = self.Unit(Max_Priority)
+        self.eat(RPAREN)
+        ifstat = self.stat()
+        if self.current_token.type == ELSE:
+            self.eat(ELSE)
+            elsestat = self.stat()
+        else:
+            elsestat = AST_EmptyStat()
+        return AST_If(condition, ifstat, elsestat)
+
+    def whilestat(self):
+        self.eat(WHILE)
+        self.eat(LPAREN)
+        condition = self.Unit(Max_Priority)
+        self.eat(RPAREN)
+        stat = self.stat()
+        return AST_While(condition, stat)
+
+    def forstat(self):
+        self.eat(FOR)
+        self.eat(LPAREN)
+        name = self.current_token.value
+        self.eat(NAME)
+        self.eat(ASSIGN)
+        begin = self.Unit(Max_Priority)
+        self.eat(COMMA)
+        end = self.Unit(Max_Priority)
+        if self.current_token.type == COMMA:
+            self.eat(COMMA)
+            step = self.Unit(Max_Priority)
+        else:
+            step = None
+        self.eat(RPAREN)
+        stat = self.stat()
+        return AST_For(name, begin, end, step, stat)
+
     def stat(self):
         if self.current_token.type == LBRACE:
             ans = self.block()
@@ -474,47 +527,21 @@ class Parser(object):
             ans = AST_Print(self.Unit(Max_Priority))
             self.eat(SEMI)
         elif self.current_token.type == IF:
-            self.eat(IF)
-            self.eat(LPAREN)
-            condition = self.Unit(Max_Priority)
-            self.eat(RPAREN)
-            ifstat = self.stat()
-            if self.current_token.type == ELSE:
-                self.eat(ELSE)
-                elsestat = self.stat()
-            else:
-                elsestat = AST_EmptyStat()
-            ans = AST_If(condition, ifstat, elsestat)
+            ans = self.ifstat()
         elif self.current_token.type == WHILE:
-            self.eat(WHILE)
-            self.eat(LPAREN)
-            condition = self.Unit(Max_Priority)
-            self.eat(RPAREN)
-            stat = self.stat()
-            ans = AST_While(condition, stat)
+            ans = self.whilestat()
         elif self.current_token.type == FOR:
-            self.eat(FOR)
-            self.eat(LPAREN)
-            name = self.current_token.value
-            self.eat(NAME)
-            self.eat(ASSIGN)
-            begin = self.Unit(Max_Priority)
-            self.eat(COMMA)
-            end = self.Unit(Max_Priority)
-            if self.current_token.type == COMMA:
-                self.eat(COMMA)
-                step = self.Unit(Max_Priority)
-            else:
-                step = None
-            self.eat(RPAREN)
-            stat = self.stat()
-            ans = AST_For(name, begin, end, step, stat)
+            ans = self.forstat()
         elif self.current_token.type == RETURN:
             self.eat(RETURN)
             if self.current_token.type != SEMI:
                 ans = AST_Return(self.Unit(Max_Priority))
             else:
                 ans = AST_Return(None)
+            self.eat(SEMI)
+        elif self.current_token.type == INPUT:
+            self.eat(INPUT)
+            ans = AST_Input(self.Unit(Max_Priority))
             self.eat(SEMI)
         else:
             ans = self.Unit(Max_Priority)
@@ -605,6 +632,13 @@ class Interpreter(NodeVisitor):
             print('%g' % ans)
         else:
             print(ans)
+
+    def visit_Input(self, node):
+        try:
+            ans = raw_input()
+        except NameError:
+            ans = input()
+        self.visit(AST_BinOp(Token(ASSIGN, '='), node.var, AST_Num(float(ans))))
 
     def visit_UnaryOp(self, node):
         return UnaryOp[node.token.type](self.visit(node.son))

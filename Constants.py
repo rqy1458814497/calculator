@@ -6,7 +6,7 @@ LPAREN, RPAREN, ASSIGN, COMMA, SEMI = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA', 'SE
 LBRACK, RBRACK, INDEX = 'LBRACK', 'RBRACK', 'INDEX'
 LBRACE, RBRACE, NUM, NAME, EOF = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'EOF'
 PRINT, FUNC, IF, ELSE, RETURN = 'PRINT', 'FUNC', 'IF', 'ELSE', 'RETURN'
-WHILE, FOR = 'WHILE', 'FOR'
+WHILE, FOR, INPUT = 'WHILE', 'FOR', 'INPUT'
 # Reseverd words.
 RESERVED = {
     'print': PRINT,
@@ -15,7 +15,8 @@ RESERVED = {
     'else': ELSE,
     'return': RETURN,
     'while': WHILE,
-    'for': FOR
+    'for': FOR,
+    'input': INPUT
 }
 # Symbols that has two characters.
 TwoCharSymbols = {
@@ -74,4 +75,4 @@ Associativity = [
 ]
 BeginBlockSymbols = [LBRACE, LPAREN, LBRACK]
 EndBlockSymbols = [RBRACE, RPAREN, RBRACK]
-VERSION = '3.1'
+VERSION = '3.2'

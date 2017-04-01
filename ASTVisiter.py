@@ -1,4 +1,5 @@
 from Constants import *
+from Lexer import Token
 import Parser
 
 
@@ -52,6 +53,13 @@ class Interpreter(NodeVisitor):
             print('%g' % ans)
         else:
             print(ans)
+
+    def visit_Input(self, node):
+        try:
+            ans = raw_input()
+        except NameError:
+            ans = input()
+        self.visit(Parser.AST_BinOp(Token(ASSIGN, '='), node.var, Parser.AST_Num(float(ans))))
 
     def visit_UnaryOp(self, node):
         return UnaryOp[node.token.type](self.visit(node.son))

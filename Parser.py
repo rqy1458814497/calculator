@@ -82,6 +82,18 @@ class AST_Print(AST):
     __repr__ = __str__
 
 
+class AST_Input(AST):
+    """AST: input statement"""
+
+    def __init__(self, var):
+        self.var = var
+
+    def __str__(self):
+        return "AST_Input(%r)" % (self.var)
+
+    __repr__ = __str__
+
+
 class AST_EmptyStat(AST):
     """AST: empty statement"""
 
@@ -285,6 +297,45 @@ class Parser(object):
                     rightest_node = rightest_node.rson
         return ans
 
+    def ifstat(self):
+        self.eat(IF)
+        self.eat(LPAREN)
+        condition = self.Unit(Max_Priority)
+        self.eat(RPAREN)
+        ifstat = self.stat()
+        if self.current_token.type == ELSE:
+            self.eat(ELSE)
+            elsestat = self.stat()
+        else:
+            elsestat = AST_EmptyStat()
+        return AST_If(condition, ifstat, elsestat)
+
+    def whilestat(self):
+        self.eat(WHILE)
+        self.eat(LPAREN)
+        condition = self.Unit(Max_Priority)
+        self.eat(RPAREN)
+        stat = self.stat()
+        return AST_While(condition, stat)
+
+    def forstat(self):
+        self.eat(FOR)
+        self.eat(LPAREN)
+        name = self.current_token.value
+        self.eat(NAME)
+        self.eat(ASSIGN)
+        begin = self.Unit(Max_Priority)
+        self.eat(COMMA)
+        end = self.Unit(Max_Priority)
+        if self.current_token.type == COMMA:
+            self.eat(COMMA)
+            step = self.Unit(Max_Priority)
+        else:
+            step = None
+        self.eat(RPAREN)
+        stat = self.stat()
+        return AST_For(name, begin, end, step, stat)
+
     def stat(self):
         if self.current_token.type == LBRACE:
             ans = self.block()
@@ -293,47 +344,21 @@ class Parser(object):
             ans = AST_Print(self.Unit(Max_Priority))
             self.eat(SEMI)
         elif self.current_token.type == IF:
-            self.eat(IF)
-            self.eat(LPAREN)
-            condition = self.Unit(Max_Priority)
-            self.eat(RPAREN)
-            ifstat = self.stat()
-            if self.current_token.type == ELSE:
-                self.eat(ELSE)
-                elsestat = self.stat()
-            else:
-                elsestat = AST_EmptyStat()
-            ans = AST_If(condition, ifstat, elsestat)
+            ans = self.ifstat()
         elif self.current_token.type == WHILE:
-            self.eat(WHILE)
-            self.eat(LPAREN)
-            condition = self.Unit(Max_Priority)
-            self.eat(RPAREN)
-            stat = self.stat()
-            ans = AST_While(condition, stat)
+            ans = self.whilestat()
         elif self.current_token.type == FOR:
-            self.eat(FOR)
-            self.eat(LPAREN)
-            name = self.current_token.value
-            self.eat(NAME)
-            self.eat(ASSIGN)
-            begin = self.Unit(Max_Priority)
-            self.eat(COMMA)
-            end = self.Unit(Max_Priority)
-            if self.current_token.type == COMMA:
-                self.eat(COMMA)
-                step = self.Unit(Max_Priority)
-            else:
-                step = None
-            self.eat(RPAREN)
-            stat = self.stat()
-            ans = AST_For(name, begin, end, step, stat)
+            ans = self.forstat()
         elif self.current_token.type == RETURN:
             self.eat(RETURN)
             if self.current_token.type != SEMI:
                 ans = AST_Return(self.Unit(Max_Priority))
             else:
                 ans = AST_Return(None)
+            self.eat(SEMI)
+        elif self.current_token.type == INPUT:
+            self.eat(INPUT)
+            ans = AST_Input(self.Unit(Max_Priority))
             self.eat(SEMI)
         else:
             ans = self.Unit(Max_Priority)
