@@ -53,7 +53,7 @@ class AST_Array(AST):
         self.lst = lst
 
     def __str__(self):
-        return "AST_Num(%r)" % (self.lst)
+        return "AST_Array(%r)" % (self.lst)
 
     __repr__ = __str__
 

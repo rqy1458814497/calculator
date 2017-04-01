@@ -13,6 +13,24 @@ class NodeVisitor(object):
         raise Exception('No visit_%s method' % type(node).__name__)
 
 
+class Inputer(object):
+    def __init__(self):
+        self.lst = []
+
+    def getNumber(self):
+        if not self.lst:
+            try:
+                self.lst = raw_input().split()
+            except NameError:
+                self.lst = input().split()
+        ans = float(self.lst[0])
+        self.lst = self.lst[1:]
+        return ans
+
+
+inputer = Inputer()
+
+
 class Interpreter(NodeVisitor):
     def __init__(self, parser, global_var, functions):
         self.parser = parser
@@ -22,6 +40,7 @@ class Interpreter(NodeVisitor):
         self.functions = functions
         self.returned = False
         self.return_value = None
+        self.inputer = Inputer()
 
     def Error(self, errstr):
         raise SyntaxError(errstr)
@@ -55,10 +74,7 @@ class Interpreter(NodeVisitor):
             print(ans)
 
     def visit_Input(self, node):
-        try:
-            ans = raw_input()
-        except NameError:
-            ans = input()
+        ans = inputer.getNumber()
         self.visit(Parser.AST_BinOp(Token(ASSIGN, '='), node.var, Parser.AST_Num(float(ans))))
 
     def visit_UnaryOp(self, node):
