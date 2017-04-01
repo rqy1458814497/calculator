@@ -1,6 +1,6 @@
 # A Small Interperter
 
-## Version 3.1
+## Version 3.2
 
 Interpret a unnaming language(maybe I will name it 'RQY-language', after I finish it).
 
@@ -25,7 +25,7 @@ Numbers can be '1', '3', '3e4', '3.3', '.3e5', but not '.e4', '1.'(in other word
 
 ### Expression:
 
-Some number, variable or function call with unary operators('+' or '-') connected with binary operators('+', '-', '\*', '/', '^'(pow), '==', '!=', '>', '<', '>=', '<=', '=') and parentheses, for example,
+Some number, variable, array access or function call with unary operators('+' or '-') connected with binary operators('+', '-', '\*', '/', '^'(pow), '==', '!=', '>', '<', '>=', '<=', '=') and parentheses, for example,
 
     1+3
 
@@ -47,6 +47,7 @@ Priority levels of binary operators(from lowest to highest):
 * \+ \-
 * \* /
 * ^
+* [] ()
 
 ### Statement:
 
@@ -56,15 +57,17 @@ Pay attention: Unlike version2.0, you must add ';' after some statement. It is t
 
 2. **print expression;**: Output the value of expression.
 
-3. **return expression;**: Return from a function(so you can't write it ouside any function).
+3. **input var;**: Input the var. You don't have to declare it before. There it can only input a number.
 
-4. **'{'stat stat stat ...'}'**: A statement bolck.
+4. **return expression;**: Return from a function(so you can't write it ouside any function).
 
-5. **'while' '('condition')' stat**:  While loop.
+5. **'{'stat stat stat ...'}'**: A statement bolck.
 
-6. **'if' '('condition')' stat [else stat]**: If statement or if-else statement.
+6. **'while' '('condition')' stat**:  While loop.
 
-6. **'for' '('name '=' begin_value',' end_value [',' step]')' stat**: For statement. If you give 'step', it will work like 'for (name = begin_value; name <= end_value; name += step)' (or if step < 0, it will be 'name >= end_value'). Otherwise, 'step' will be 1 (or -1, if begin_value > end_value). **Pay attention:** You can modify the variable 'step' in the loop body, so be careful to avoid endless loop. For example, *for(i = 0,5) i = 0;* is a endless loop.
+7. **'if' '('condition')' stat [else stat]**: If statement or if-else statement.
+
+8. **'for' '('name '=' begin_value',' end_value [',' step]')' stat**: For statement. If you give 'step', it will work like 'for (name = begin_value; name <= end_value; name += step)' (or if step < 0, it will be 'name >= end_value'). Otherwise, 'step' will be 1 (or -1, if begin_value > end_value). **Pay attention:** You can modify the variable 'step' in the loop body, so be careful to avoid endless loop. For example, *for(i = 0,5) i = 0;* is a endless loop.
 
 ### Function:
 
