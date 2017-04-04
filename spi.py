@@ -8,9 +8,10 @@ LT, GT, LE, GE, EQ, NE = 'LT', 'GT', 'LE', 'GE', 'EQ', 'NE'
 AND, OR, NOT = 'AND', 'OR', 'NOT'
 LPAREN, RPAREN, ASSIGN, COMMA, SEMI = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA', 'SEMI'
 LBRACK, RBRACK, INDEX = 'LBRACK', 'RBRACK', 'INDEX'
-LBRACE, RBRACE, NUM, NAME, EOF = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'EOF'
+LBRACE, RBRACE, NUM, NAME, STRING = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'STRING'
 PRINT, FUNC, IF, ELSE, RETURN = 'PRINT', 'FUNC', 'IF', 'ELSE', 'RETURN'
 WHILE, FOR, INPUT = 'WHILE', 'FOR', 'INPUT'
+EOF = 'EOF'
 # Reseverd words.
 RESERVED = {
     'print': PRINT,
@@ -77,9 +78,15 @@ Associativity = [
     LeftAssoc,   # '||'
     RightAssoc   # '='
 ]
+EscapeCharacters = {
+    'n': '\n', 't': '\t', 'r': '\r',
+    '\'': '\'', '\"': '\"', '\\': '\\',
+    'a': '\a', 'b': '\b',
+    'v': '\v', 'f': '\f'
+}
 BeginBlockSymbols = [LBRACE, LPAREN, LBRACK]
 EndBlockSymbols = [RBRACE, RPAREN, RBRACK]
-VERSION = '3.2'
+VERSION = '3.3'
 
 
 ##############################################################
@@ -178,6 +185,39 @@ class Lexer(object):
                 self.advance()
         return Token(NUM, float(ans))
 
+    def get_string(self):
+        endchar = self.current_char
+        self.advance()
+        ans = ''
+        while self.current_char is not None and self.current_char != endchar:
+            if self.current_char == '\\':
+                self.advance()
+                ch = self.current_char
+                self.advance()
+                if ch in EscapeCharacters:
+                    ans += EscapeCharacters[ch]
+                elif ch == 'o':
+                    ch = self.current_char
+                    self.advance()
+                    ch += self.current_char
+                    self.advance()
+                    ans += chr(int(ch, 16))
+                elif ch == 'x':
+                    ch = self.current_char
+                    self.advance()
+                    ch += self.current_char
+                    self.advance()
+                    ans += chr(int(ch, 8))
+                else:
+                    self.Error('invaild escape characters at "%s"' % self.get_local_text())
+            else:
+                ans += self.current_char
+                self.advance()
+        if self.current_char != endchar:
+            self.Error('EOL while scanning string literal')
+        self.advance()
+        return ans
+
     def get_next_token(self):
         while self.current_char is not None:
             if self.current_char.isspace():
@@ -196,6 +236,8 @@ class Lexer(object):
                 return Token(OneCharSymbols[c], c)
             elif self.current_char.isalpha() or self.current_char == '_':
                 return self.get_NAME()
+            elif self.current_char in ['\'', '\"']:
+                return Token(STRING, self.get_string())
             else:
                 self.Error('parse error at "%s"' % self.get_local_text())
         return Token(EOF, None)
@@ -239,6 +281,18 @@ class AST_Num(AST):
 
     def __str__(self):
         return "AST_Num(%r)" % (self.value)
+
+    __repr__ = __str__
+
+
+class AST_String(AST):
+    """AST: string"""
+
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return "AST_String(%r)" % (self.value)
 
     __repr__ = __str__
 
@@ -420,6 +474,9 @@ class Parser(object):
             elif self.current_token.type == NUM:
                 ans = AST_Num(self.current_token.value)
                 self.eat(NUM)
+            elif self.current_token.type == STRING:
+                ans = AST_String(self.current_token.value)
+                self.eat(STRING)
             elif self.current_token.type in UnaryOp:
                 token = self.current_token
                 self.eat(token.type)
@@ -659,6 +716,9 @@ class Interpreter(NodeVisitor):
         return UnaryOp[node.token.type](self.visit(node.son))
 
     def visit_Num(self, node):
+        return node.value
+
+    def visit_String(self, node):
         return node.value
 
     def visit_Array(self, node):

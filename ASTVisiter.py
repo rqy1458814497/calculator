@@ -83,6 +83,9 @@ class Interpreter(NodeVisitor):
     def visit_Num(self, node):
         return node.value
 
+    def visit_String(self, node):
+        return node.value
+
     def visit_Array(self, node):
         ans = []
         for subnode in node.lst:

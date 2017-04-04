@@ -93,6 +93,39 @@ class Lexer(object):
                 self.advance()
         return Token(NUM, float(ans))
 
+    def get_string(self):
+        endchar = self.current_char
+        self.advance()
+        ans = ''
+        while self.current_char is not None and self.current_char != endchar:
+            if self.current_char == '\\':
+                self.advance()
+                ch = self.current_char
+                self.advance()
+                if ch in EscapeCharacters:
+                    ans += EscapeCharacters[ch]
+                elif ch == 'o':
+                    ch = self.current_char
+                    self.advance()
+                    ch += self.current_char
+                    self.advance()
+                    ans += chr(int(ch, 16))
+                elif ch == 'x':
+                    ch = self.current_char
+                    self.advance()
+                    ch += self.current_char
+                    self.advance()
+                    ans += chr(int(ch, 8))
+                else:
+                    self.Error('invaild escape characters at "%s"' % self.get_local_text())
+            else:
+                ans += self.current_char
+                self.advance()
+        if self.current_char != endchar:
+            self.Error('EOL while scanning string literal')
+        self.advance()
+        return ans
+
     def get_next_token(self):
         while self.current_char is not None:
             if self.current_char.isspace():
@@ -111,6 +144,8 @@ class Lexer(object):
                 return Token(OneCharSymbols[c], c)
             elif self.current_char.isalpha() or self.current_char == '_':
                 return self.get_NAME()
+            elif self.current_char in ['\'', '\"']:
+                return Token(STRING, self.get_string())
             else:
                 self.Error('parse error at "%s"' % self.get_local_text())
         return Token(EOF, None)

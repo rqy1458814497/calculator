@@ -46,6 +46,18 @@ class AST_Num(AST):
     __repr__ = __str__
 
 
+class AST_String(AST):
+    """AST: string"""
+
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return "AST_String(%r)" % (self.value)
+
+    __repr__ = __str__
+
+
 class AST_Array(AST):
     """AST: array"""
 
@@ -237,6 +249,9 @@ class Parser(object):
             elif self.current_token.type == NUM:
                 ans = AST_Num(self.current_token.value)
                 self.eat(NUM)
+            elif self.current_token.type == STRING:
+                ans = AST_String(self.current_token.value)
+                self.eat(STRING)
             elif self.current_token.type in UnaryOp:
                 token = self.current_token
                 self.eat(token.type)

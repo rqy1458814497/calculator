@@ -4,9 +4,10 @@ LT, GT, LE, GE, EQ, NE = 'LT', 'GT', 'LE', 'GE', 'EQ', 'NE'
 AND, OR, NOT = 'AND', 'OR', 'NOT'
 LPAREN, RPAREN, ASSIGN, COMMA, SEMI = 'LPAREN', 'RPAREN', 'ASSIGN', 'COMMA', 'SEMI'
 LBRACK, RBRACK, INDEX = 'LBRACK', 'RBRACK', 'INDEX'
-LBRACE, RBRACE, NUM, NAME, EOF = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'EOF'
+LBRACE, RBRACE, NUM, NAME, STRING = 'LBRACE', 'RBRACE', 'NUM', 'NAME', 'STRING'
 PRINT, FUNC, IF, ELSE, RETURN = 'PRINT', 'FUNC', 'IF', 'ELSE', 'RETURN'
 WHILE, FOR, INPUT = 'WHILE', 'FOR', 'INPUT'
+EOF = 'EOF'
 # Reseverd words.
 RESERVED = {
     'print': PRINT,
@@ -73,6 +74,12 @@ Associativity = [
     LeftAssoc,   # '||'
     RightAssoc   # '='
 ]
+EscapeCharacters = {
+    'n': '\n', 't': '\t', 'r': '\r',
+    '\'': '\'', '\"': '\"', '\\': '\\',
+    'a': '\a', 'b': '\b',
+    'v': '\v', 'f': '\f'
+}
 BeginBlockSymbols = [LBRACE, LPAREN, LBRACK]
 EndBlockSymbols = [RBRACE, RPAREN, RBRACK]
-VERSION = '3.2'
+VERSION = '3.3'

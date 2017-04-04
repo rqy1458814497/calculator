@@ -1,8 +1,10 @@
 # A Small Interperter
 
-## Version 3.2
+## Version 3.3
 
 Interpret a unnaming language(maybe I will name it 'RQY-language', after I finish it).
+
+Will, I think I will finish it soon. Maybe I will finish after provincial selection.
 
 ## Files:
 
@@ -13,7 +15,7 @@ Interpret a unnaming language(maybe I will name it 'RQY-language', after I finis
 * main.py The entry point to the program. Includes **main()**, **runcmd()**
 * spi.py Five files in one. Including all content of files above.
 
-## Support syntax:
+## Supporting syntax:
 
 ### Name:
 
@@ -21,7 +23,13 @@ Like other languages, a name (of a variable or a function) begins with letters o
 
 ### Number:
 
-Numbers can be '1', '3', '3e4', '3.3', '.3e5', but not '.e4', '1.'(in other words, there must be something after '.', or between '.' and 'e').
+Numbers can be '1', '3', '3e4', '3.3', '.54', '.3e5', but not '.e4', '1.'(in other words, there must be something after '.', or between '.' and 'e').
+
+### String:
+
+Strings have character **'** or **"** at their both ends.
+
+Supporting escape characters : '\\'', '\\"', '\\n', '\\t', '\\v', '\\f', '\\a', '\\b', '\\r', '\\\\'
 
 ### Expression:
 
@@ -51,7 +59,7 @@ Priority levels of binary operators(from lowest to highest):
 
 ### Statement:
 
-Pay attention: Unlike version2.0, you must add ';' after some statement. It is to avoid ambiguity(such as 'print 1   + 2' and 'print 1+2')
+Pay attention: Unlike version2.0, you must add ';' after some statement. It is to avoid ambiguity(such as 'print 1 &nbsp; &nbsp; +2' and 'print 1+2')
 
 1. **expression;**: It won't do anything without assign. Pay attention: function call also belong to it.
 
